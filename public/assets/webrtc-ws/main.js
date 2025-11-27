@@ -15,6 +15,8 @@
 
   console.log("ID:", id);
 
+  let isAllowSignaling = false;
+
   const pc = new RTCPeerConnection({
     iceServers: [
       { urls: "stun:stun.l.google.com:19302" }, // STUN
@@ -69,21 +71,21 @@
     await pc.setLocalDescription(answer);
   };
 
+  let sendCandidatesSymbol = null;
   const sendCandidates = async (newCandidate = null, force = false) => {
     if (newCandidate) candidates.push(newCandidate);
     else if (!candidates.length) return;
-    const items = candidates.splice(0);
-    if (
-      force ||
-      pc.connectionState === "connecting" ||
-      pc.connectionState === "connected"
-    ) {
+    const symbol = Symbol();
+    sendCandidatesSymbol = symbol;
+    if (!force) await new Promise((r) => setTimeout(r, 100));
+    if (sendCandidatesSymbol !== symbol) return;
+    if (force || isAllowSignaling) {
+      const items = candidates.splice(0);
+      if (items.length === 0) return;
       console.log(`Send [candidates]: ${items.length}`);
-      if (items.length === 1) await sendSignaling("candidate", items[0]);
-      else await sendSignaling("candidates", items);
+      await sendSignaling("candidates", items);
     } else {
       console.log(`Pending candidates...`);
-      candidates.push(...items);
     }
   };
 
@@ -150,12 +152,15 @@
     if (e.candidate) {
       sendCandidates(e.candidate);
     } else {
+      sendCandidates(null, true);
       console.log("All candidates have been discovered.");
     }
   });
 
   pc.addEventListener("negotiationneeded", async () => {
-    if (pc.connectionState === "connected") await sendOffer();
+    if (pc.connectionState === "connected" && isAllowSignaling) {
+      await sendOffer();
+    }
   });
 
   pc.addEventListener("iceconnectionstatechange", () => {
@@ -169,10 +174,10 @@
       pc.connectionState === "disconnected" ||
       pc.connectionState === "failed"
     ) {
+      isAllowSignaling = false;
       remoteVideoElem.srcObject = null;
       remoteAudioElem.srcObject = null;
-      console.log("Reconnecting...");
-      pc.restartIce();
+      console.log("Connection lost.");
     }
   });
 
@@ -194,27 +199,23 @@
         break;
       }
       case "offer-request": {
-        await sendOffer();
+        isAllowSignaling = true;
+        await sendOffer().then(() => sendCandidates(null, true));
         break;
       }
       case "offer": {
-        await Promise.all([
-          pc.setRemoteDescription(data).then(() => sendAnswer()),
-          sendSignaling("candidates-request"),
-          sendCandidates(null, true),
-        ]);
+        isAllowSignaling = true;
+        await pc
+          .setRemoteDescription(data)
+          .then(() => sendAnswer())
+          .then(() => sendCandidates(null, true));
         break;
       }
       case "answer": {
         await Promise.all([
           pc.setRemoteDescription(data),
-          sendSignaling("candidates-request"),
           sendCandidates(null, true),
         ]);
-        break;
-      }
-      case "candidate": {
-        await pc.addIceCandidate(data);
         break;
       }
       case "candidates": {
@@ -222,8 +223,10 @@
         await Promise.all(data.map((i) => pc.addIceCandidate(i)));
         break;
       }
-      case "candidates-request": {
-        await sendCandidates(null, true);
+      case "restart": {
+        isAllowSignaling = false;
+        console.log("Restart ICE.");
+        pc.restartIce();
         break;
       }
     }

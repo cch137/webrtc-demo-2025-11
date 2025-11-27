@@ -27,9 +27,7 @@ class Client {
       }
       case "offer":
       case "answer":
-      case "candidate":
-      case "candidates":
-      case "candidates-request": {
+      case "candidates": {
         this.room.emitToOthers(this, event, data);
         break;
       }
@@ -68,14 +66,14 @@ class Room {
 
   removeClient(client: Client) {
     const index = this.clients.indexOf(client);
-    if (index !== -1) {
-      const client = this.clients.splice(index, 1).at(0);
-      return client ?? null;
-    }
+    if (index === -1) return null;
+    const removed = this.clients.splice(index, 1).at(0);
     if (this.clients.length === 0) {
       Room.rooms.delete(this.id);
+    } else {
+      this.emitToOthers(client, "restart");
     }
-    return null;
+    return removed ?? null;
   }
 
   emitToOthers(sender: Client | null, event: string, data?: unknown) {
@@ -107,7 +105,7 @@ webrtcWs.get(
             : new TextDecoder().decode(evt.data)
         );
         if (typeof event !== "string") return;
-        webrtcWsDebug(`room [${id}] event:`, event);
+        webrtcWsDebug(`room [${id}]:`, event);
         client.on(event, data);
       },
       onError(evt, ws) {
