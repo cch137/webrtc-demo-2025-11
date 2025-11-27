@@ -2,7 +2,6 @@ import fs from "fs";
 import { config as dotenv } from "dotenv";
 import { Hono } from "hono";
 import { createNodeWebSocket } from "@hono/node-ws";
-import { cors } from "hono/cors";
 import { serveStatic } from "hono/serve-static";
 import createDebug from "debug";
 
@@ -15,23 +14,6 @@ export const app = new Hono();
 export const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({
   app,
 });
-
-app.use(
-  "*",
-  cors({
-    origin: [
-      "http://127.0.0.1:5500",
-      "http://localhost:5500",
-      "http://127.0.0.1:3000",
-      "http://localhost:3000",
-      "http://localhost:8080",
-      "http://127.0.0.1:8080",
-    ],
-    credentials: true,
-    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
-  })
-);
 
 app.use(
   "/*",

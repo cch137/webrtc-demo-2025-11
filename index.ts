@@ -16,7 +16,7 @@ process.on("unhandledRejection", (error) => {
 });
 
 const port =
-  (process.env.PORT && Number.parseInt(process.env.PORT, 10)) || 3000;
+  (process.env.PORT && Number.parseInt(process.env.PORT, 10)) || 40001;
 
 const server = serve({ fetch: app.fetch, port }, (info) => {
   debug(`online @ http://localhost:${info.port}`);
