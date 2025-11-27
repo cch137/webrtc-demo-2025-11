@@ -1,0 +1,32 @@
+{
+  "name": "node_server",
+  "version": "0.0.0",
+  "description": "a simple dss",
+  "main": "index.ts",
+  "scripts": {
+    "test": "jest",
+    "dev": "nodemon",
+    "start": "ts-node index.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hono/node-server": "^1.19.6",
+    "@hono/node-ws": "^1.2.0",
+    "debug": "^4.4.3",
+    "dotenv": "^17.2.3",
+    "hono": "^4.10.6"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.12",
+    "@types/jest": "^30.0.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.10.1",
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.11",
+    "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.2",
+    "tsc": "^2.0.4",
+    "typescript": "^5.9.3"
+  }
+}

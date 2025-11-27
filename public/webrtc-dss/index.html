@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        background-color: #f0f0f0;
+        margin: 0;
+        padding: 16px;
+      }
+      video {
+        max-width: 100%;
+        max-height: 40dvh;
+        background-color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>WebRTC Audio Mix Demo</h3>
+    <p>Local Video</p>
+    <video id="localVideo" autoplay muted playsinline></video>
+    <p>Remote Video</p>
+    <video id="remoteVideo" autoplay playsinline></video>
+    <audio id="remoteAudio" autoplay></audio>
+    <script src="/assets/webrtc-dss/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "watch": [""],
+  "ext": "ts,json",
+  "exec": "set DEBUG=* && ts-node index.ts"
+}
